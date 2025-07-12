@@ -1,0 +1,109 @@
+<div class="clients-container">
+  <div class="header">
+    <h1>ניהול לקוחות</h1>
+    <button class="btn btn-primary" (click)="addNewClient()">
+      הוסף לקוח חדש
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <h3>סה"כ לקוחות</h3>
+      <p>{{ clientsCount() }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>הכנסות חודשיות</h3>
+      <p>₪{{ Math.floor(monthlyRevenue()) }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>חבילות אחסון</h3>
+      <p>{{ hostingCount() }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Elementor Pro</h3>
+      <p>{{ elementorCount() }}</p>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>שם</th>
+          <th>אימייל</th>
+          <th>טלפון</th>
+          <th>דומיין</th>
+          <th>סוג חבילה</th>
+          <th>מחיר</th>
+          <th>תאריך חידוש</th>
+          <th>חוזה</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of clients()" class="client-row">
+          <td>
+            <div class="client-name">
+              <strong>{{ client.firstName }} {{ client.lastName }}</strong>
+            </div>
+          </td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.phone }}</td>
+          <td>
+            <a
+              [href]="'https://' + client.domain"
+              target="_blank"
+              class="domain-link"
+            >
+              {{ client.domain }}
+            </a>
+          </td>
+          <td>
+            <span
+              class="package-badge"
+              [class]="'package-' + getPackageClass(client.packageType)"
+            >
+              {{ getPackageHebrew(client.packageType) }}
+            </span>
+          </td>
+          <td>₪{{ client.packagePrice }}</td>
+          <td>
+            <span [class]="getRenewalClass(client.renewalDate)">
+              {{ client.renewalDate | date : "short" }}
+            </span>
+          </td>
+          <td>
+            <span
+              *ngIf="client.contractFile"
+              class="contract-status has-contract"
+            >
+              ✓ קיים
+            </span>
+            <span
+              *ngIf="!client.contractFile"
+              class="contract-status no-contract"
+            >
+              ✗ חסר
+            </span>
+          </td>
+          <td>
+            <div class="actions">
+              <button
+                class="btn btn-sm btn-secondary"
+                (click)="editClient(client.id)"
+              >
+                ערוך
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="deleteClient(client.id)"
+              >
+                מחק
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

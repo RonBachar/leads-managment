@@ -1,0 +1,149 @@
+<div class="form-container">
+  <div class="form-header">
+    <h1>{{ isEditMode ? "ערוך ליד" : "הוסף ליד חדש" }}</h1>
+    <button type="button" class="btn btn-secondary" (click)="goBack()">
+      חזור ללידים
+    </button>
+  </div>
+
+  <form [formGroup]="leadForm" (ngSubmit)="onSubmit()" class="lead-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="firstName">שם פרטי *</label>
+        <input
+          id="firstName"
+          type="text"
+          formControlName="firstName"
+          class="form-control"
+          [class.error]="isFieldInvalid('firstName')"
+          placeholder="הכנס שם פרטי"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+          {{ getFieldError("firstName") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">שם משפחה *</label>
+        <input
+          id="lastName"
+          type="text"
+          formControlName="lastName"
+          class="form-control"
+          [class.error]="isFieldInvalid('lastName')"
+          placeholder="הכנס שם משפחה"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+          {{ getFieldError("lastName") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="email">אימייל</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-control"
+          [class.error]="isFieldInvalid('email')"
+          placeholder="example@domain.com"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          {{ getFieldError('email') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">טלפון</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          class="form-control"
+          [class.error]="isFieldInvalid('phone')"
+          placeholder="050-1234567"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('phone')">
+          {{ getFieldError('phone') }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="source">מקור *</label>
+        <select
+          id="source"
+          formControlName="source"
+          class="form-control"
+          [class.error]="isFieldInvalid('source')"
+        >
+          <option value="">בחר מקור</option>
+          <option value="Website">אתר אינטרנט</option>
+          <option value="Email">אימייל</option>
+          <option value="Referral">המלצה</option>
+          <option value="WhatsApp">ווטסאפ</option>
+          <option value="Phone">טלפון</option>
+          <option value="Social Media">רשתות חברתיות</option>
+          <option value="Other">אחר</option>
+        </select>
+        <div class="error-message" *ngIf="isFieldInvalid('source')">
+          {{ getFieldError("source") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="status">סטטוס *</label>
+        <select
+          id="status"
+          formControlName="status"
+          class="form-control"
+          [class.error]="isFieldInvalid('status')"
+        >
+          <option value="">בחר סטטוס</option>
+          <option [value]="LeadStatus.NEW">חדש</option>
+          <option [value]="LeadStatus.IN_PROGRESS">בטיפול</option>
+          <option [value]="LeadStatus.FOLLOW_UP">במעקב</option>
+          <option [value]="LeadStatus.NOT_INTERESTED">לא מעוניין</option>
+        </select>
+        <div class="error-message" *ngIf="isFieldInvalid('status')">
+          {{ getFieldError("status") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">הערות</label>
+      <textarea
+        id="notes"
+        formControlName="notes"
+        class="form-control"
+        rows="4"
+        placeholder="הכנס הערות נוספות על ליד זה..."
+        (keydown.enter)="$event.preventDefault(); onSubmit()"
+      ></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="goBack()">
+        ביטול
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="leadForm.invalid || isSubmitting"
+      >
+        <span *ngIf="isSubmitting">שומר...</span>
+        <span *ngIf="!isSubmitting">{{
+          isEditMode ? "עדכן ליד" : "צור ליד"
+        }}</span>
+      </button>
+    </div>
+  </form>
+</div>

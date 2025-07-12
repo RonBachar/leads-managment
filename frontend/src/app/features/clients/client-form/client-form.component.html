@@ -1,0 +1,211 @@
+<div class="form-container">
+  <div class="form-header">
+    <h1>{{ isEditMode ? "ערוך לקוח" : "הוסף לקוח חדש" }}</h1>
+    <button type="button" class="btn btn-secondary" (click)="goBack()">
+      חזור ללקוחות
+    </button>
+  </div>
+
+  <form [formGroup]="clientForm" (ngSubmit)="onSubmit()" class="client-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="firstName">שם פרטי *</label>
+        <input
+          id="firstName"
+          type="text"
+          formControlName="firstName"
+          class="form-control"
+          [class.error]="isFieldInvalid('firstName')"
+          placeholder="הכנס שם פרטי"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+          {{ getFieldError("firstName") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">שם משפחה *</label>
+        <input
+          id="lastName"
+          type="text"
+          formControlName="lastName"
+          class="form-control"
+          [class.error]="isFieldInvalid('lastName')"
+          placeholder="הכנס שם משפחה"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+          {{ getFieldError("lastName") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="email">אימייל *</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-control"
+          [class.error]="isFieldInvalid('email')"
+          placeholder="example@domain.com"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          {{ getFieldError("email") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">טלפון *</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          class="form-control"
+          [class.error]="isFieldInvalid('phone')"
+          placeholder="050-1234567"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('phone')">
+          {{ getFieldError("phone") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="domain">דומיין *</label>
+      <input
+        id="domain"
+        type="text"
+        formControlName="domain"
+        class="form-control"
+        [class.error]="isFieldInvalid('domain')"
+        placeholder="example.co.il"
+        (keydown.enter)="$event.preventDefault(); onSubmit()"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('domain')">
+        {{ getFieldError("domain") }}
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="packageType">סוג חבילה *</label>
+        <select
+          id="packageType"
+          formControlName="packageType"
+          class="form-control"
+          [class.error]="isFieldInvalid('packageType')"
+        >
+          <option value="">בחר חבילה</option>
+          <option [value]="PackageType.HOSTING">
+            {{ getPackageHebrew(PackageType.HOSTING) }}
+          </option>
+          <option [value]="PackageType.ELEMENTOR_PRO">
+            {{ getPackageHebrew(PackageType.ELEMENTOR_PRO) }}
+          </option>
+          <option [value]="PackageType.HOSTING_ELEMENTOR_PRO">
+            {{ getPackageHebrew(PackageType.HOSTING_ELEMENTOR_PRO) }}
+          </option>
+        </select>
+        <div class="error-message" *ngIf="isFieldInvalid('packageType')">
+          {{ getFieldError("packageType") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="packagePrice">מחיר חודשי (₪) *</label>
+        <input
+          id="packagePrice"
+          type="number"
+          formControlName="packagePrice"
+          class="form-control"
+          [class.error]="isFieldInvalid('packagePrice')"
+          min="1"
+          step="0.01"
+          placeholder="0.00"
+          (keydown.enter)="$event.preventDefault(); onSubmit()"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('packagePrice')">
+          {{ getFieldError("packagePrice") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="renewalDate">תאריך חידוש *</label>
+      <input
+        id="renewalDate"
+        type="date"
+        formControlName="renewalDate"
+        class="form-control"
+        [class.error]="isFieldInvalid('renewalDate')"
+        (keydown.enter)="$event.preventDefault(); onSubmit()"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('renewalDate')">
+        {{ getFieldError("renewalDate") }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="contractFile">קובץ חוזה (אופציונלי)</label>
+      <div class="file-upload-container">
+        <div class="file-input-wrapper">
+          <input
+            id="contractFile"
+            type="file"
+            (change)="onFileSelected($event)"
+            accept=".pdf,.doc,.docx"
+            class="file-input"
+          />
+          <label for="contractFile" class="file-input-label">
+            בחר קובץ חוזה
+          </label>
+        </div>
+        <div class="file-info" *ngIf="selectedFile">
+          <span class="file-name">{{ selectedFile.name }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-danger"
+            (click)="removeFile()"
+          >
+            הסר
+          </button>
+        </div>
+        <div class="file-info" *ngIf="existingFile">
+          <span class="file-name">{{ existingFile.name }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-danger"
+            (click)="removeExistingFile()"
+          >
+            הסר
+          </button>
+        </div>
+        <div class="file-info" *ngIf="!selectedFile && !existingFile">
+          <span class="no-file">לא נבחר קובץ</span>
+        </div>
+      </div>
+      <small class="help-text">תמיכה בקבצי PDF, DOC, DOCX</small>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="goBack()">
+        ביטול
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="clientForm.invalid || isSubmitting"
+      >
+        <span *ngIf="isSubmitting">שומר...</span>
+        <span *ngIf="!isSubmitting">{{
+          isEditMode ? "עדכן לקוח" : "צור לקוח"
+        }}</span>
+      </button>
+    </div>
+  </form>
+</div>
