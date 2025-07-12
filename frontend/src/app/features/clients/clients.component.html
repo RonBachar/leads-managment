@@ -11,21 +11,21 @@
     </div>
 
     <div class="stats">
-      <div class="stat-card">
+      <div class="stat-card total-clients">
         <h3>{{ getTotalClients() }}</h3>
         <p>סה"כ לקוחות</p>
       </div>
-      <div class="stat-card">
-        <h3>₪{{ getTotalRevenue() }}</h3>
-        <p>הכנסות חודשיות</p>
+      <div class="stat-card average-income">
+        <h3>₪{{ getAverageMonthlyIncome() }}</h3>
+        <p>ממוצע הכנסות חודשיות</p>
       </div>
-      <div class="stat-card">
-        <h3>{{ getActiveClients() }}</h3>
-        <p>לקוחות פעילים</p>
+      <div class="stat-card with-package">
+        <h3>{{ getClientsWithPackage() }}</h3>
+        <p>לקוחות עם חבילה</p>
       </div>
-      <div class="stat-card">
-        <h3>₪{{ getAverageRevenue() }}</h3>
-        <p>ממוצע הכנסות</p>
+      <div class="stat-card without-contract">
+        <h3>{{ getClientsWithoutContract() }}</h3>
+        <p>ללא חוזה חתום</p>
       </div>
     </div>
 
@@ -79,9 +79,7 @@
             </td>
             <td>₪{{ client.packagePrice }}</td>
             <td>
-              <span [class]="getRenewalStatusClass(client)">
-                {{ getRenewalStatusText(client) }}
-              </span>
+              {{ getRenewalStatusText(client) }}
             </td>
             <td>
               <span

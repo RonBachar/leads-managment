@@ -59,16 +59,6 @@
   overflow: hidden;
 }
 
-.stat-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--success) 0%, var(--info) 100%);
-}
-
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-xl);
@@ -87,6 +77,39 @@
   margin: 0;
   font-weight: 500;
   font-size: var(--font-size-base);
+}
+
+/* Stat Card Colors */
+.stat-card.total-clients {
+  border-top: 4px solid var(--primary);
+}
+
+.stat-card.total-clients h3 {
+  color: var(--primary);
+}
+
+.stat-card.average-income {
+  border-top: 4px solid var(--success);
+}
+
+.stat-card.average-income h3 {
+  color: var(--success);
+}
+
+.stat-card.with-package {
+  border-top: 4px solid var(--info);
+}
+
+.stat-card.with-package h3 {
+  color: var(--info);
+}
+
+.stat-card.without-contract {
+  border-top: 4px solid var(--danger);
+}
+
+.stat-card.without-contract h3 {
+  color: var(--danger);
 }
 
 /* Search */
@@ -177,6 +200,12 @@
 }
 
 /* Package Badges */
+.badge-no-package {
+  background: var(--gray-100);
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+}
+
 .badge-hosting {
   background: var(--primary-bg);
   color: var(--primary);

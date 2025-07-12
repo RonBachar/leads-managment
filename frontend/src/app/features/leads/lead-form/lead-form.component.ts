@@ -1,15 +1,15 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LeadsService } from '../../../core/services/leads.service';
 import { LeadStatus } from '../../../shared/models/lead.model';
-import { FormValidationService } from '../../../shared/services/form-validation.service';
-import { UtilsService } from '../../../shared/services/utils.service';
-import {
-  APP_CONSTANTS,
-  LEAD_SOURCES,
-} from '../../../shared/constants/app.constants';
+import { APP_CONSTANTS } from '../../../shared/constants/app.constants';
 
 @Component({
   selector: 'app-lead-form',
@@ -23,8 +23,6 @@ export class LeadFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly leadsService = inject(LeadsService);
-  private readonly validationService = inject(FormValidationService);
-  private readonly utils = inject(UtilsService);
 
   // Form and state
   leadForm!: FormGroup;
@@ -34,7 +32,6 @@ export class LeadFormComponent implements OnInit {
 
   // Constants
   readonly LeadStatus = LeadStatus;
-  readonly leadSources = Object.values(LEAD_SOURCES);
   readonly routes = APP_CONSTANTS.ROUTES;
 
   ngOnInit(): void {
@@ -46,7 +43,15 @@ export class LeadFormComponent implements OnInit {
    * Initialize the form with validators
    */
   private initializeForm(): void {
-    this.leadForm = this.fb.group(this.validationService.getLeadValidators());
+    this.leadForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      email: [''], // No validation - completely optional
+      phone: [''], // No validation - completely optional
+      source: [''], // No validation - completely optional
+      status: [''], // No validation - completely optional
+      notes: [''],
+    });
   }
 
   /**
@@ -85,7 +90,7 @@ export class LeadFormComponent implements OnInit {
    * Handle form submission
    */
   onSubmit(): void {
-    if (this.leadForm.valid && !this.isSubmitting) {
+    if (this.isFormValid() && !this.isSubmitting) {
       this.isSubmitting = true;
 
       const formValue = this.leadForm.value;
@@ -104,27 +109,30 @@ export class LeadFormComponent implements OnInit {
         this.leadsService.createLead(formValue);
         this.router.navigate([this.routes.LEADS]);
       }
-    } else if (!this.leadForm.valid) {
-      this.validationService.markFormGroupTouched(this.leadForm.controls);
+    } else if (!this.isFormValid()) {
+      this.markFormGroupTouched();
     }
   }
 
   /**
-   * Get validation error message
+   * Check if form is valid (only firstName and lastName required)
    */
-  getErrorMessage(controlName: string, fieldName: string): string {
-    const control = this.leadForm.get(controlName);
-    return control
-      ? this.validationService.getErrorMessage(control, fieldName)
-      : '';
+  isFormValid(): boolean {
+    const firstName = this.leadForm.get('firstName');
+    const lastName = this.leadForm.get('lastName');
+
+    return !!(firstName?.valid && lastName?.valid);
   }
 
   /**
-   * Check if field has error
+   * Check if field should show success styling (has value and is valid)
    */
-  hasError(controlName: string): boolean {
-    const control = this.leadForm.get(controlName);
-    return control ? this.validationService.hasError(control) : false;
+  shouldShowSuccess(fieldName: string): boolean {
+    const field = this.leadForm.get(fieldName);
+    if (!field) return false;
+
+    // Only show success for fields that have value and are valid
+    return !!(field.value && field.valid && (field.dirty || field.touched));
   }
 
   /**
@@ -132,11 +140,19 @@ export class LeadFormComponent implements OnInit {
    */
   isFieldInvalid(fieldName: string): boolean {
     const field = this.leadForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+    if (!field) return false;
+
+    // Only show errors for firstName and lastName
+    if (fieldName === 'firstName' || fieldName === 'lastName') {
+      return !!(field.invalid && (field.dirty || field.touched));
+    }
+
+    // For all other fields, only show error if they have value but are invalid
+    return !!(field.value && field.invalid && (field.dirty || field.touched));
   }
 
   /**
-   * Get field error
+   * Get field error message
    */
   getFieldError(fieldName: string): string {
     const field = this.leadForm.get(fieldName);
@@ -161,6 +177,16 @@ export class LeadFormComponent implements OnInit {
     }
 
     return 'שדה זה אינו תקין';
+  }
+
+  /**
+   * Mark all form controls as touched
+   */
+  private markFormGroupTouched(): void {
+    Object.keys(this.leadForm.controls).forEach((key) => {
+      const control = this.leadForm.get(key);
+      control?.markAsTouched();
+    });
   }
 
   /**

@@ -1,4 +1,5 @@
 export enum PackageType {
+  NO_PACKAGE = 'ללא חבילה',
   HOSTING = 'Hosting',
   ELEMENTOR_PRO = 'Elementor Pro',
   HOSTING_ELEMENTOR_PRO = 'Hosting + Elementor Pro',

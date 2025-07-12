@@ -60,6 +60,7 @@ export const LEAD_SOURCE_LABELS: Record<string, string> = {
 } as const;
 
 export const PACKAGE_LABELS: Record<string, string> = {
+  'ללא חבילה': 'ללא חבילה',
   HOSTING: 'אחסון',
   ELEMENTOR_PRO: 'Elementor Pro',
   HOSTING_ELEMENTOR_PRO: 'אחסון + Elementor Pro',

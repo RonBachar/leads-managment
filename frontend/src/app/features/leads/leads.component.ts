@@ -5,11 +5,6 @@ import { LeadsService } from '../../core/services/leads.service';
 import { Lead, LeadStatus } from '../../shared/models/lead.model';
 import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
-interface SortState {
-  column: string;
-  direction: 'asc' | 'desc' | null;
-}
-
 @Component({
   selector: 'app-leads',
   standalone: true,
@@ -25,7 +20,6 @@ export class LeadsComponent implements OnInit {
   filteredLeads: Lead[] = [];
   searchTerm = '';
   isLoading = false;
-  sortState: SortState = { column: '', direction: null };
 
   readonly routes = APP_CONSTANTS.ROUTES;
   readonly LeadStatus = LeadStatus;
@@ -50,87 +44,17 @@ export class LeadsComponent implements OnInit {
   filterLeads(): void {
     if (!this.searchTerm.trim()) {
       this.filteredLeads = [...this.leads];
-    } else {
-      const term = this.searchTerm.toLowerCase();
-      this.filteredLeads = this.leads.filter(
-        (lead) =>
-          lead.firstName.toLowerCase().includes(term) ||
-          lead.lastName.toLowerCase().includes(term) ||
-          (lead.email && lead.email.toLowerCase().includes(term)) ||
-          (lead.phone && lead.phone.includes(term))
-      );
-    }
-    this.applySorting();
-  }
-
-  sortBy(column: string): void {
-    if (this.sortState.column === column) {
-      // Toggle direction if same column
-      if (this.sortState.direction === 'asc') {
-        this.sortState.direction = 'desc';
-      } else if (this.sortState.direction === 'desc') {
-        this.sortState.direction = null;
-      } else {
-        this.sortState.direction = 'asc';
-      }
-    } else {
-      // New column, start with ascending
-      this.sortState.column = column;
-      this.sortState.direction = 'asc';
+      return;
     }
 
-    this.applySorting();
-  }
-
-  applySorting(): void {
-    if (!this.sortState.direction) {
-      return; // No sorting
-    }
-
-    this.filteredLeads.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (this.sortState.column) {
-        case 'createdAt':
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
-          break;
-        default:
-          return 0;
-      }
-
-      if (aValue < bValue) {
-        return this.sortState.direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return this.sortState.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
-
-  getSortIcon(column: string): string {
-    if (this.sortState.column !== column) {
-      return '↕️'; // Default sort icon
-    }
-
-    switch (this.sortState.direction) {
-      case 'asc':
-        return '↑';
-      case 'desc':
-        return '↓';
-      default:
-        return '↕️';
-    }
-  }
-
-  getSortClass(column: string): string {
-    if (this.sortState.column !== column) {
-      return '';
-    }
-
-    return this.sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc';
+    const term = this.searchTerm.toLowerCase();
+    this.filteredLeads = this.leads.filter(
+      (lead) =>
+        lead.firstName.toLowerCase().includes(term) ||
+        lead.lastName.toLowerCase().includes(term) ||
+        (lead.email && lead.email.toLowerCase().includes(term)) ||
+        (lead.phone && lead.phone.includes(term))
+    );
   }
 
   getStatusClass(status: LeadStatus): string {
@@ -168,6 +92,10 @@ export class LeadsComponent implements OnInit {
         return 'לינקדאין';
       case 'Google Ads':
         return 'גוגל אדס';
+      case 'X-place':
+        return 'X-place';
+      case 'ליד יזום':
+        return 'ליד יזום';
       case 'other':
         return 'אחר';
       default:

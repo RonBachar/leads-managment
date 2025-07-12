@@ -1,10 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
 import { PackageType } from '../../../shared/models/client.model';
-import { FormValidationService } from '../../../shared/services/form-validation.service';
 import { UtilsService } from '../../../shared/services/utils.service';
 import {
   APP_CONSTANTS,
@@ -23,7 +27,6 @@ export class ClientFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly clientsService = inject(ClientsService);
-  private readonly validationService = inject(FormValidationService);
   private readonly utils = inject(UtilsService);
 
   // Form and state
@@ -33,6 +36,7 @@ export class ClientFormComponent implements OnInit {
   clientId: string | null = null;
   selectedFile: File | null = null;
   existingFile: File | null = null;
+  daysUntilRenewal: number | null = null;
 
   // Constants
   readonly PackageType = PackageType;
@@ -47,9 +51,16 @@ export class ClientFormComponent implements OnInit {
    * Initialize the form with validators
    */
   private initializeForm(): void {
-    this.clientForm = this.fb.group(
-      this.validationService.getClientValidators()
-    );
+    this.clientForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern(/^[0-9-+\s()]+$/)]],
+      domain: [''],
+      packageType: [''],
+      packagePrice: [''],
+      renewalDate: [''],
+    });
   }
 
   /**
@@ -83,6 +94,13 @@ export class ClientFormComponent implements OnInit {
         renewalDate: this.formatDateForInput(client.renewalDate),
       });
       this.existingFile = client.contractFile;
+
+      // Calculate days until renewal for existing client
+      const today = new Date();
+      const daysUntilRenewal = Math.ceil(
+        (client.renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      this.daysUntilRenewal = daysUntilRenewal;
     }
   }
 
@@ -163,27 +181,9 @@ export class ClientFormComponent implements OnInit {
         this.clientsService.createClient(clientData);
         this.router.navigate([this.routes.CLIENTS]);
       }
-    } else if (!this.clientForm.valid) {
-      this.validationService.markFormGroupTouched(this.clientForm.controls);
+    } else if (!this.isFormValid()) {
+      this.markFormGroupTouched();
     }
-  }
-
-  /**
-   * Get validation error message
-   */
-  getErrorMessage(controlName: string, fieldName: string): string {
-    const control = this.clientForm.get(controlName);
-    return control
-      ? this.validationService.getErrorMessage(control, fieldName)
-      : '';
-  }
-
-  /**
-   * Check if field has error
-   */
-  hasError(controlName: string): boolean {
-    const control = this.clientForm.get(controlName);
-    return control ? this.validationService.hasError(control) : false;
   }
 
   /**
@@ -191,11 +191,19 @@ export class ClientFormComponent implements OnInit {
    */
   isFieldInvalid(fieldName: string): boolean {
     const field = this.clientForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+    if (!field) return false;
+
+    // Only show errors for required fields: firstName, lastName, email, phone
+    if (['firstName', 'lastName', 'email', 'phone'].includes(fieldName)) {
+      return !!(field.invalid && (field.dirty || field.touched));
+    }
+
+    // For all other fields, only show error if they have value but are invalid
+    return !!(field.value && field.invalid && (field.dirty || field.touched));
   }
 
   /**
-   * Get field error
+   * Get field error message
    */
   getFieldError(fieldName: string): string {
     const field = this.clientForm.get(fieldName);
@@ -211,19 +219,12 @@ export class ClientFormComponent implements OnInit {
       switch (fieldName) {
         case 'phone':
           return 'אנא הכנס מספר טלפון תקין';
-        case 'domain':
-          return 'אנא הכנס דומיין תקין (לדוגמה: example.co.il)';
-        case 'packagePrice':
-          return 'אנא הכנס מחיר תקין';
         default:
           return 'פורמט לא תקין';
       }
     }
     if (field.errors['minlength']) {
       return `שדה זה חייב להכיל לפחות ${field.errors['minlength'].requiredLength} תווים`;
-    }
-    if (field.errors['min']) {
-      return 'הערך חייב להיות גדול מ-0';
     }
 
     return 'שדה זה אינו תקין';
@@ -241,5 +242,72 @@ export class ClientFormComponent implements OnInit {
    */
   goBack(): void {
     this.router.navigate([this.routes.CLIENTS]);
+  }
+
+  /**
+   * Handle renewal date change
+   */
+  onRenewalDateChange(): void {
+    const renewalDateControl = this.clientForm.get('renewalDate');
+    if (renewalDateControl && renewalDateControl.value) {
+      const renewalDate = new Date(renewalDateControl.value);
+      const today = new Date();
+      const daysUntilRenewal = Math.ceil(
+        (renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      this.daysUntilRenewal = daysUntilRenewal;
+    } else {
+      this.daysUntilRenewal = null;
+    }
+  }
+
+  /**
+   * Get days until renewal text
+   */
+  getDaysUntilRenewalText(): string {
+    if (this.daysUntilRenewal === null) return '';
+
+    if (this.daysUntilRenewal < 0) {
+      return `${Math.abs(this.daysUntilRenewal)} ימים באיחור`;
+    } else if (this.daysUntilRenewal === 0) {
+      return 'היום';
+    } else if (this.daysUntilRenewal === 1) {
+      return 'מחר';
+    } else {
+      return `${this.daysUntilRenewal} ימים עד לחידוש`;
+    }
+  }
+
+  /**
+   * Check if form is valid
+   */
+  isFormValid(): boolean {
+    // Only check required fields: firstName, lastName, email, phone
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
+    return requiredFields.every((field) => {
+      const control = this.clientForm.get(field);
+      return control && control.valid;
+    });
+  }
+
+  /**
+   * Check if field should show success state
+   */
+  shouldShowSuccess(fieldName: string): boolean {
+    const field = this.clientForm.get(fieldName);
+    if (!field) return false;
+
+    // Only show success for fields that have value and are valid
+    return !!(field.value && field.valid && (field.dirty || field.touched));
+  }
+
+  /**
+   * Mark all form controls as touched
+   */
+  private markFormGroupTouched(): void {
+    Object.keys(this.clientForm.controls).forEach((key) => {
+      const control = this.clientForm.get(key);
+      control?.markAsTouched();
+    });
   }
 }

@@ -63,6 +63,8 @@ export class ClientsComponent implements OnInit {
 
   getPackageClass(packageType: PackageType): string {
     switch (packageType) {
+      case PackageType.NO_PACKAGE:
+        return 'badge-no-package';
       case PackageType.HOSTING:
         return 'badge-hosting';
       case PackageType.ELEMENTOR_PRO:
@@ -150,8 +152,43 @@ export class ClientsComponent implements OnInit {
     return this.clients.reduce((sum, client) => sum + client.packagePrice, 0);
   }
 
+  getMonthlyRevenue(): number {
+    return this.clientsService.monthlyRevenue();
+  }
+
   getAverageRevenue(): number {
     if (this.clients.length === 0) return 0;
     return Math.round(this.getTotalRevenue() / this.clients.length);
+  }
+
+  getAverageMonthlyIncome(): number {
+    if (this.clients.length === 0) return 0;
+    const totalPackagePrices = this.clients.reduce(
+      (sum, client) => sum + client.packagePrice,
+      0
+    );
+    return Math.round(totalPackagePrices / this.clients.length);
+  }
+
+  getClientsWithPackage(): number {
+    return this.clients.filter(
+      (client) =>
+        client.packageType &&
+        client.packageType !== null &&
+        client.packageType !== PackageType.NO_PACKAGE
+    ).length;
+  }
+
+  getClientsWithoutContract(): number {
+    return this.clients.filter(
+      (client) => !client.contractFile || client.contractFile === null
+    ).length;
+  }
+
+  formatDate(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 }

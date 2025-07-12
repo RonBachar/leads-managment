@@ -54,17 +54,10 @@ export class FormValidationService {
         Validators.required,
         Validators.pattern(this.VALIDATION.PHONE_PATTERN),
       ],
-      domain: [
-        Validators.required,
-        Validators.pattern(this.VALIDATION.DOMAIN_PATTERN),
-      ],
-      packageType: [Validators.required],
-      packagePrice: [
-        Validators.required,
-        Validators.min(this.VALIDATION.MIN_PRICE),
-        Validators.pattern(this.VALIDATION.PRICE_PATTERN),
-      ],
-      renewalDate: [Validators.required],
+      domain: [],
+      packageType: [],
+      packagePrice: [],
+      renewalDate: [],
     };
   }
 
