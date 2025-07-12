@@ -1,0 +1,28 @@
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="navbar-brand">
+      <a routerLink="/" class="brand-link">
+        מערכת ניהול לידים - WendyDigital
+      </a>
+    </div>
+
+    <div class="navbar-nav">
+      <a
+        routerLink="/leads"
+        routerLinkActive="active"
+        class="nav-link"
+        [class.active]="isActiveRoute('/leads')"
+      >
+        ניהול לידים
+      </a>
+      <a
+        routerLink="/clients"
+        routerLinkActive="active"
+        class="nav-link"
+        [class.active]="isActiveRoute('/clients')"
+      >
+        ניהול לקוחות
+      </a>
+    </div>
+  </div>
+</nav>

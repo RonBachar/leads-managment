@@ -1,4 +1,5 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, computed } from '@angular/core';
+import { BaseServiceClass } from '../../shared/services/base.service';
 import {
   Client,
   CreateClientRequest,
@@ -9,18 +10,95 @@ import {
 @Injectable({
   providedIn: 'root',
 })
-export class ClientsService {
-  private readonly _clients = signal<Client[]>([]);
+export class ClientsService extends BaseServiceClass<Client> {
+  // Computed signals for statistics
+  public readonly monthlyRevenue = computed(() => {
+    const totalRevenue = this._items().reduce(
+      (total, client) => total + client.packagePrice,
+      0
+    );
+    return Math.floor(totalRevenue / 12); // Average monthly revenue
+  });
 
-  // Public signals
-  public readonly clients = this._clients.asReadonly();
-  public readonly clientsCount = computed(() => this._clients().length);
+  public readonly hostingCount = computed(
+    () =>
+      this._items().filter(
+        (client) =>
+          client.packageType === PackageType.HOSTING ||
+          client.packageType === PackageType.HOSTING_ELEMENTOR_PRO
+      ).length
+  );
+
+  public readonly elementorCount = computed(
+    () =>
+      this._items().filter(
+        (client) =>
+          client.packageType === PackageType.ELEMENTOR_PRO ||
+          client.packageType === PackageType.HOSTING_ELEMENTOR_PRO
+      ).length
+  );
 
   constructor() {
+    super();
     this.initializeMockData();
   }
 
-  private initializeMockData(): void {
+  /**
+   * Create a new client with proper typing
+   */
+  createClient(clientData: CreateClientRequest): Client {
+    return this.create(clientData);
+  }
+
+  /**
+   * Update an existing client
+   */
+  updateClient(
+    id: string,
+    updates: Partial<CreateClientRequest>
+  ): Client | null {
+    return this.update(id, updates);
+  }
+
+  /**
+   * Delete a client
+   */
+  deleteClient(id: string): boolean {
+    return this.delete(id);
+  }
+
+  /**
+   * Get client by ID
+   */
+  getClientById(id: string): Client | undefined {
+    return this.getById(id);
+  }
+
+  /**
+   * Update contract file for a client
+   */
+  updateContractFile(id: string, file: File | null): boolean {
+    const currentClients = this._items();
+    const clientIndex = currentClients.findIndex((client) => client.id === id);
+
+    if (clientIndex === -1) {
+      return false;
+    }
+
+    const updatedClient: Client = {
+      ...currentClients[clientIndex],
+      contractFile: file,
+      updatedAt: new Date(),
+    };
+
+    this._items.update((clients) =>
+      clients.map((client) => (client.id === id ? updatedClient : client))
+    );
+
+    return true;
+  }
+
+  protected initializeMockData(): void {
     const mockClients: Client[] = [
       {
         id: '1',
@@ -64,87 +142,106 @@ export class ClientsService {
         createdAt: new Date('2024-01-05'),
         updatedAt: new Date('2024-01-08'),
       },
+      {
+        id: '4',
+        firstName: 'שירה',
+        lastName: 'ברק',
+        email: 'shira.barak@example.com',
+        phone: '050-4445555',
+        domain: 'barak-photography.com',
+        packageType: PackageType.HOSTING_ELEMENTOR_PRO,
+        packagePrice: 299,
+        renewalDate: new Date('2024-09-15'),
+        contractFile: null,
+        createdAt: new Date('2024-01-20'),
+        updatedAt: new Date('2024-01-20'),
+      },
+      {
+        id: '5',
+        firstName: 'עומר',
+        lastName: 'רוזן',
+        email: 'omer.rozen@example.com',
+        phone: '052-6667777',
+        domain: 'rozen-consulting.co.il',
+        packageType: PackageType.ELEMENTOR_PRO,
+        packagePrice: 99,
+        renewalDate: new Date('2024-08-30'),
+        contractFile: null,
+        createdAt: new Date('2024-01-18'),
+        updatedAt: new Date('2024-01-19'),
+      },
+      {
+        id: '6',
+        firstName: 'נועה',
+        lastName: 'שפירא',
+        email: 'noa.shapira@example.com',
+        phone: '054-8889999',
+        domain: 'shapira-boutique.com',
+        packageType: PackageType.HOSTING,
+        packagePrice: 149,
+        renewalDate: new Date('2024-07-12'),
+        contractFile: null,
+        createdAt: new Date('2024-01-12'),
+        updatedAt: new Date('2024-01-15'),
+      },
+      {
+        id: '7',
+        firstName: 'אלון',
+        lastName: 'גרין',
+        email: 'alon.green@example.com',
+        phone: '050-1112222',
+        domain: 'green-tech.co.il',
+        packageType: PackageType.HOSTING_ELEMENTOR_PRO,
+        packagePrice: 299,
+        renewalDate: new Date('2024-06-25'),
+        contractFile: null,
+        createdAt: new Date('2024-01-22'),
+        updatedAt: new Date('2024-01-22'),
+      },
+      {
+        id: '8',
+        firstName: 'תמר',
+        lastName: 'וייס',
+        email: 'tamar.weiss@example.com',
+        phone: '052-3334444',
+        domain: 'weiss-accounting.com',
+        packageType: PackageType.ELEMENTOR_PRO,
+        packagePrice: 99,
+        renewalDate: new Date('2024-05-18'),
+        contractFile: null,
+        createdAt: new Date('2024-01-16'),
+        updatedAt: new Date('2024-01-17'),
+      },
+      {
+        id: '9',
+        firstName: 'גיא',
+        lastName: 'מור',
+        email: 'guy.mor@example.com',
+        phone: '054-5556666',
+        domain: 'mor-legal.co.il',
+        packageType: PackageType.HOSTING,
+        packagePrice: 149,
+        renewalDate: new Date('2024-04-10'),
+        contractFile: null,
+        createdAt: new Date('2024-01-08'),
+        updatedAt: new Date('2024-01-10'),
+      },
+      {
+        id: '10',
+        firstName: 'דנה',
+        lastName: 'פלד',
+        email: 'dana.feld@example.com',
+        phone: '050-7778888',
+        domain: 'feld-interior.com',
+        packageType: PackageType.HOSTING_ELEMENTOR_PRO,
+        packagePrice: 299,
+        renewalDate: new Date('2024-03-22'),
+        contractFile: null,
+        createdAt: new Date('2024-01-05'),
+        updatedAt: new Date('2024-01-07'),
+      },
     ];
 
-    this._clients.set(mockClients);
-  }
-
-  getClientById(id: string): Client | undefined {
-    return this._clients().find((client) => client.id === id);
-  }
-
-  createClient(clientData: CreateClientRequest): Client {
-    const newClient: Client = {
-      id: this.generateId(),
-      ...clientData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this._clients.update((clients) => [...clients, newClient]);
-    return newClient;
-  }
-
-  updateClient(
-    id: string,
-    updates: Partial<CreateClientRequest>
-  ): Client | null {
-    const currentClients = this._clients();
-    const clientIndex = currentClients.findIndex((client) => client.id === id);
-
-    if (clientIndex === -1) {
-      return null;
-    }
-
-    const updatedClient: Client = {
-      ...currentClients[clientIndex],
-      ...updates,
-      updatedAt: new Date(),
-    };
-
-    this._clients.update((clients) =>
-      clients.map((client) => (client.id === id ? updatedClient : client))
-    );
-
-    return updatedClient;
-  }
-
-  deleteClient(id: string): boolean {
-    const currentClients = this._clients();
-    const clientExists = currentClients.some((client) => client.id === id);
-
-    if (!clientExists) {
-      return false;
-    }
-
-    this._clients.update((clients) =>
-      clients.filter((client) => client.id !== id)
-    );
-    return true;
-  }
-
-  updateContractFile(id: string, file: File | null): boolean {
-    const currentClients = this._clients();
-    const clientIndex = currentClients.findIndex((client) => client.id === id);
-
-    if (clientIndex === -1) {
-      return false;
-    }
-
-    const updatedClient: Client = {
-      ...currentClients[clientIndex],
-      contractFile: file,
-      updatedAt: new Date(),
-    };
-
-    this._clients.update((clients) =>
-      clients.map((client) => (client.id === id ? updatedClient : client))
-    );
-
-    return true;
-  }
-
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    this._items.set(mockClients);
   }
 }

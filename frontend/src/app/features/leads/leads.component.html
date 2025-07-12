@@ -1,89 +1,105 @@
-<div class="leads-container">
-  <div class="header">
-    <h1>ניהול לידים</h1>
-    <button class="btn btn-primary" (click)="addNewLead()">הוסף ליד חדש</button>
-  </div>
+<div class="container">
+  <div class="leads">
+    <div class="header">
+      <div class="header-content">
+        <h1>ניהול לידים</h1>
+        <p>נהל ועקוב אחר לידים חדשים ופוטנציאליים</p>
+      </div>
+      <button class="btn btn-primary btn-lg" (click)="addNewLead()">
+        הוסף ליד חדש
+      </button>
+    </div>
 
-  <div class="stats">
-    <div class="stat-card">
-      <h3>סה"כ לידים</h3>
-      <p>{{ leadsCount() }}</p>
+    <div class="stats">
+      <div class="stat-card">
+        <h3>{{ getTotalLeads() }}</h3>
+        <p>סה"כ לידים</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ getNewLeads() }}</h3>
+        <p>חדש</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ getInProgressLeads() }}</h3>
+        <p>בטיפול</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ getNotInterestedLeads() }}</h3>
+        <p>לא מעוניין</p>
+      </div>
     </div>
-    <div class="stat-card">
-      <h3>חדש</h3>
-      <p>{{ newLeadsCount() }}</p>
-    </div>
-    <div class="stat-card">
-      <h3>בטיפול</h3>
-      <p>{{ inProgressCount() }}</p>
-    </div>
-    <div class="stat-card">
-      <h3>במעקב</h3>
-      <p>{{ followUpCount() }}</p>
-    </div>
-    <div class="stat-card">
-      <h3>לא מעוניין</h3>
-      <p>{{ notInterestedCount() }}</p>
-    </div>
-  </div>
 
-  <div class="table-container">
-    <table class="leads-table">
-      <thead>
-        <tr>
-          <th>שם</th>
-          <th>אימייל</th>
-          <th>טלפון</th>
-          <th>מקור</th>
-          <th>סטטוס</th>
-          <th>תאריך יצירה</th>
-          <th>הערות</th>
-          <th>פעולות</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let lead of leads()" class="lead-row">
-          <td>
-            <div class="lead-name">
+    <div class="search-section">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="חיפוש לידים..."
+          class="form-input"
+          [value]="searchTerm"
+          (input)="onSearch($event)"
+        />
+      </div>
+    </div>
+
+    <div class="table-section">
+      <table class="table">
+        <thead class="table-header">
+          <tr>
+            <th>שם</th>
+            <th>אימייל</th>
+            <th>טלפון</th>
+            <th>מקור</th>
+            <th>סטטוס</th>
+            <th class="sortable" (click)="sortBy('createdAt')">
+              <div class="header-content">
+                <span>תאריך יצירה</span>
+                <span class="sort-icon">{{ getSortIcon("createdAt") }}</span>
+              </div>
+            </th>
+            <th>הערות</th>
+            <th>פעולות</th>
+          </tr>
+        </thead>
+        <tbody class="table-body">
+          <tr *ngFor="let lead of filteredLeads">
+            <td>
               <strong>{{ lead.firstName }} {{ lead.lastName }}</strong>
-            </div>
-          </td>
-          <td>{{ lead.email || "-" }}</td>
-          <td>{{ lead.phone || "-" }}</td>
-          <td>{{ getSourceHebrew(lead.source) }}</td>
-          <td>
-            <span class="status-badge" [class]="'status-' + lead.status">
-              {{ getStatusHebrew(lead.status) }}
-            </span>
-          </td>
-          <td>{{ lead.createdAt | date : "shortDate" }}</td>
-          <td>
-            <div class="notes-cell">
-              <span *ngIf="lead.notes" class="notes-text">
+            </td>
+            <td>{{ lead.email || "-" }}</td>
+            <td>{{ lead.phone || "-" }}</td>
+            <td>{{ getSourceText(lead.source) }}</td>
+            <td>
+              <span class="badge" [class]="getStatusClass(lead.status)">
+                {{ getStatusText(lead.status) }}
+              </span>
+            </td>
+            <td>{{ lead.createdAt | date : "shortDate" }}</td>
+            <td>
+              <span *ngIf="lead.notes" class="notes">
                 {{ lead.notes | slice : 0 : 50
                 }}{{ lead.notes.length > 50 ? "..." : "" }}
               </span>
-              <span *ngIf="!lead.notes" class="no-notes"> אין הערות </span>
-            </div>
-          </td>
-          <td>
-            <div class="actions">
-              <button
-                class="btn btn-sm btn-secondary"
-                (click)="editLead(lead.id)"
-              >
-                ערוך
-              </button>
-              <button
-                class="btn btn-sm btn-danger"
-                (click)="deleteLead(lead.id)"
-              >
-                מחק
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              <span *ngIf="!lead.notes" class="no-notes">אין הערות</span>
+            </td>
+            <td>
+              <div class="actions">
+                <button
+                  class="btn btn-sm btn-secondary"
+                  (click)="editLead(lead)"
+                >
+                  ערוך
+                </button>
+                <button
+                  class="btn btn-sm btn-danger"
+                  (click)="deleteLead(lead)"
+                >
+                  מחק
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

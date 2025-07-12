@@ -1,97 +1,157 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ClientsService } from '../../core/services/clients.service';
 import { Client, PackageType } from '../../shared/models/client.model';
-import { computed } from '@angular/core';
+import {
+  APP_CONSTANTS,
+  PACKAGE_LABELS,
+} from '../../shared/constants/app.constants';
 
 @Component({
   selector: 'app-clients',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './clients.component.html',
-  styleUrl: './clients.component.css',
+  styleUrls: ['./clients.component.scss'],
 })
-export class ClientsComponent {
-  private clientsService = inject(ClientsService);
-  private router = inject(Router);
+export class ClientsComponent implements OnInit {
+  private readonly clientsService = inject(ClientsService);
+  private readonly router = inject(Router);
 
-  // Make Math available in template
-  Math = Math;
+  clients: Client[] = [];
+  filteredClients: Client[] = [];
+  searchTerm = '';
+  isLoading = false;
 
-  // Signals
-  clients = this.clientsService.clients;
-  clientsCount = this.clientsService.clientsCount;
+  readonly routes = APP_CONSTANTS.ROUTES;
+  readonly PackageType = PackageType;
 
-  // Computed signals for stats
-  monthlyRevenue = computed(() => {
-    const totalRevenue = this.clients().reduce(
-      (total, client) => total + client.packagePrice,
-      0
+  ngOnInit(): void {
+    this.loadClients();
+  }
+
+  loadClients(): void {
+    this.isLoading = true;
+    this.clients = this.clientsService.items();
+    this.filteredClients = [...this.clients];
+    this.isLoading = false;
+  }
+
+  onSearch(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchTerm = target.value;
+    this.filterClients();
+  }
+
+  filterClients(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredClients = [...this.clients];
+      return;
+    }
+
+    const term = this.searchTerm.toLowerCase();
+    this.filteredClients = this.clients.filter(
+      (client) =>
+        client.firstName.toLowerCase().includes(term) ||
+        client.lastName.toLowerCase().includes(term) ||
+        (client.email && client.email.toLowerCase().includes(term)) ||
+        (client.phone && client.phone.includes(term)) ||
+        (client.domain && client.domain.toLowerCase().includes(term))
     );
-    return totalRevenue / 12; // Average monthly revenue
-  });
-
-  hostingCount = computed(
-    () =>
-      this.clients().filter(
-        (client) =>
-          client.packageType === PackageType.HOSTING ||
-          client.packageType === PackageType.HOSTING_ELEMENTOR_PRO
-      ).length
-  );
-
-  elementorCount = computed(
-    () =>
-      this.clients().filter(
-        (client) =>
-          client.packageType === PackageType.ELEMENTOR_PRO ||
-          client.packageType === PackageType.HOSTING_ELEMENTOR_PRO
-      ).length
-  );
-
-  getPackageHebrew(packageType: PackageType): string {
-    const packageMap: { [key: string]: string } = {
-      [PackageType.HOSTING]: 'אחסון',
-      [PackageType.ELEMENTOR_PRO]: 'Elementor Pro',
-      [PackageType.HOSTING_ELEMENTOR_PRO]: 'אחסון + Elementor Pro',
-    };
-    return packageMap[packageType] || packageType;
   }
 
   getPackageClass(packageType: PackageType): string {
-    const classMap: { [key: string]: string } = {
-      [PackageType.HOSTING]: 'hosting',
-      [PackageType.ELEMENTOR_PRO]: 'elementor-pro',
-      [PackageType.HOSTING_ELEMENTOR_PRO]: 'hosting-elementor-pro',
-    };
-    return classMap[packageType] || 'default';
+    switch (packageType) {
+      case PackageType.HOSTING:
+        return 'badge-hosting';
+      case PackageType.ELEMENTOR_PRO:
+        return 'badge-elementor-pro';
+      case PackageType.HOSTING_ELEMENTOR_PRO:
+        return 'badge-hosting-elementor-pro';
+      default:
+        return 'badge-info';
+    }
   }
 
-  getRenewalClass(renewalDate: Date): string {
-    const today = new Date();
-    const diffTime = renewalDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  getPackageText(packageType: PackageType): string {
+    return PACKAGE_LABELS[packageType] || packageType;
+  }
 
-    if (diffDays < 0) {
+  getContractStatusClass(client: Client): string {
+    return client.contractFile ? 'has-contract' : 'no-contract';
+  }
+
+  getContractStatusText(client: Client): string {
+    return client.contractFile ? 'יש חוזה' : 'אין חוזה';
+  }
+
+  getRenewalStatusClass(client: Client): string {
+    const today = new Date();
+    const renewalDate = new Date(client.renewalDate);
+    const daysUntilRenewal = Math.ceil(
+      (renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilRenewal < 0) {
       return 'renewal-overdue';
-    } else if (diffDays <= 30) {
+    } else if (daysUntilRenewal <= 30) {
       return 'renewal-soon';
     }
     return '';
   }
 
-  addNewClient(): void {
-    this.router.navigate(['/clients/new']);
-  }
+  getRenewalStatusText(client: Client): string {
+    const today = new Date();
+    const renewalDate = new Date(client.renewalDate);
+    const daysUntilRenewal = Math.ceil(
+      (renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
-  editClient(id: string): void {
-    this.router.navigate(['/clients/edit', id]);
-  }
-
-  deleteClient(id: string): void {
-    if (confirm('האם אתה בטוח שברצונך למחוק לקוח זה? פעולה זו אינה הפיכה.')) {
-      this.clientsService.deleteClient(id);
+    if (daysUntilRenewal < 0) {
+      return `${Math.abs(daysUntilRenewal)} ימים באיחור`;
+    } else if (daysUntilRenewal === 0) {
+      return 'היום';
+    } else if (daysUntilRenewal === 1) {
+      return 'מחר';
+    } else {
+      return `${daysUntilRenewal} ימים`;
     }
+  }
+
+  editClient(client: Client): void {
+    this.router.navigate([this.routes.CLIENTS_EDIT, client.id]);
+  }
+
+  deleteClient(client: Client): void {
+    if (confirm('האם אתה בטוח שברצונך למחוק לקוח זה?')) {
+      this.clientsService.deleteClient(client.id);
+      this.loadClients();
+    }
+  }
+
+  addNewClient(): void {
+    this.router.navigate([this.routes.CLIENTS_NEW]);
+  }
+
+  getTotalClients(): number {
+    return this.clients.length;
+  }
+
+  getActiveClients(): number {
+    return this.clients.filter((client) => {
+      const today = new Date();
+      const renewalDate = new Date(client.renewalDate);
+      return renewalDate >= today;
+    }).length;
+  }
+
+  getTotalRevenue(): number {
+    return this.clients.reduce((sum, client) => sum + client.packagePrice, 0);
+  }
+
+  getAverageRevenue(): number {
+    if (this.clients.length === 0) return 0;
+    return Math.round(this.getTotalRevenue() / this.clients.length);
   }
 }

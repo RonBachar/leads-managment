@@ -1,113 +1,202 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
 import { PackageType } from '../../../shared/models/client.model';
+import { FormValidationService } from '../../../shared/services/form-validation.service';
+import { UtilsService } from '../../../shared/services/utils.service';
+import {
+  APP_CONSTANTS,
+  PACKAGE_LABELS,
+} from '../../../shared/constants/app.constants';
 
 @Component({
   selector: 'app-client-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './client-form.component.html',
-  styleUrl: './client-form.component.css',
+  styleUrls: ['./client-form.component.scss'],
 })
 export class ClientFormComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private clientsService = inject(ClientsService);
+  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly clientsService = inject(ClientsService);
+  private readonly validationService = inject(FormValidationService);
+  private readonly utils = inject(UtilsService);
 
+  // Form and state
   clientForm!: FormGroup;
   isEditMode = false;
   isSubmitting = false;
   clientId: string | null = null;
-  PackageType = PackageType;
   selectedFile: File | null = null;
   existingFile: File | null = null;
+
+  // Constants
+  readonly PackageType = PackageType;
+  readonly routes = APP_CONSTANTS.ROUTES;
 
   ngOnInit(): void {
     this.initializeForm();
     this.checkEditMode();
   }
 
+  /**
+   * Initialize the form with validators
+   */
   private initializeForm(): void {
-    this.clientForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: [
-        '',
-        [Validators.required, Validators.pattern(/^[0-9\-\+\(\)\s]+$/)],
-      ],
-      domain: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}$/),
-        ],
-      ],
-      packageType: ['', [Validators.required]],
-      packagePrice: [
-        '',
-        [
-          Validators.required,
-          Validators.min(1),
-          Validators.pattern(/^\d+(\.\d{1,2})?$/),
-        ],
-      ],
-      renewalDate: ['', [Validators.required]],
+    this.clientForm = this.fb.group(
+      this.validationService.getClientValidators()
+    );
+  }
+
+  /**
+   * Check if we're in edit mode and load data
+   */
+  private checkEditMode(): void {
+    this.route.params.subscribe((params) => {
+      const id = params['id'];
+      if (id) {
+        this.isEditMode = true;
+        this.clientId = id;
+        this.loadClientData(id);
+      }
     });
   }
 
-  private checkEditMode(): void {
-    this.clientId = this.route.snapshot.paramMap.get('id');
-    this.isEditMode = !!this.clientId;
-
-    if (this.isEditMode && this.clientId) {
-      const client = this.clientsService.getClientById(this.clientId);
-      if (client) {
-        this.clientForm.patchValue({
-          firstName: client.firstName,
-          lastName: client.lastName,
-          email: client.email,
-          phone: client.phone,
-          domain: client.domain,
-          packageType: client.packageType,
-          packagePrice: client.packagePrice.toString(),
-          renewalDate: this.formatDateForInput(client.renewalDate),
-        });
-        this.existingFile = client.contractFile;
-      } else {
-        // Client not found, redirect to clients list
-        this.router.navigate(['/clients']);
-      }
+  /**
+   * Load client data for editing
+   */
+  private loadClientData(id: string): void {
+    const client = this.clientsService.getClientById(id);
+    if (client) {
+      this.clientForm.patchValue({
+        firstName: client.firstName,
+        lastName: client.lastName,
+        email: client.email,
+        phone: client.phone,
+        domain: client.domain,
+        packageType: client.packageType,
+        packagePrice: client.packagePrice,
+        renewalDate: this.formatDateForInput(client.renewalDate),
+      });
+      this.existingFile = client.contractFile;
     }
   }
 
+  /**
+   * Format date for input field
+   */
   private formatDateForInput(date: Date): string {
     return date.toISOString().split('T')[0];
   }
 
-  getPackageHebrew(packageType: PackageType): string {
-    const packageMap: { [key: string]: string } = {
-      [PackageType.HOSTING]: 'אחסון',
-      [PackageType.ELEMENTOR_PRO]: 'Elementor Pro',
-      [PackageType.HOSTING_ELEMENTOR_PRO]: 'אחסון + Elementor Pro',
-    };
-    return packageMap[packageType] || packageType;
+  /**
+   * Handle file selection
+   */
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const validation = this.utils.validateFile(file);
+
+      if (validation.isValid) {
+        this.selectedFile = file;
+      } else {
+        alert(validation.error);
+        input.value = '';
+      }
+    }
   }
 
+  /**
+   * Remove selected file
+   */
+  removeFile(): void {
+    this.selectedFile = null;
+    const fileInput = document.getElementById(
+      'contractFile'
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  /**
+   * Remove existing file
+   */
+  removeExistingFile(): void {
+    this.existingFile = null;
+    this.selectedFile = null;
+  }
+
+  /**
+   * Handle form submission
+   */
+  onSubmit(): void {
+    if (this.clientForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true;
+
+      const formValue = this.clientForm.value;
+      const contractFile = this.selectedFile || this.existingFile;
+
+      const clientData = {
+        ...formValue,
+        packagePrice: parseFloat(formValue.packagePrice),
+        renewalDate: new Date(formValue.renewalDate),
+        contractFile: contractFile,
+      };
+
+      if (this.isEditMode && this.clientId) {
+        const updatedClient = this.clientsService.updateClient(
+          this.clientId,
+          clientData
+        );
+        if (updatedClient) {
+          this.router.navigate([this.routes.CLIENTS]);
+        } else {
+          this.isSubmitting = false;
+        }
+      } else {
+        this.clientsService.createClient(clientData);
+        this.router.navigate([this.routes.CLIENTS]);
+      }
+    } else if (!this.clientForm.valid) {
+      this.validationService.markFormGroupTouched(this.clientForm.controls);
+    }
+  }
+
+  /**
+   * Get validation error message
+   */
+  getErrorMessage(controlName: string, fieldName: string): string {
+    const control = this.clientForm.get(controlName);
+    return control
+      ? this.validationService.getErrorMessage(control, fieldName)
+      : '';
+  }
+
+  /**
+   * Check if field has error
+   */
+  hasError(controlName: string): boolean {
+    const control = this.clientForm.get(controlName);
+    return control ? this.validationService.hasError(control) : false;
+  }
+
+  /**
+   * Check if field is invalid
+   */
   isFieldInvalid(fieldName: string): boolean {
     const field = this.clientForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
+  /**
+   * Get field error
+   */
   getFieldError(fieldName: string): string {
     const field = this.clientForm.get(fieldName);
     if (!field || !field.errors) return '';
@@ -140,67 +229,17 @@ export class ClientFormComponent implements OnInit {
     return 'שדה זה אינו תקין';
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      this.existingFile = null;
-    }
+  /**
+   * Get package Hebrew label
+   */
+  getPackageHebrew(packageType: PackageType): string {
+    return PACKAGE_LABELS[packageType] || packageType;
   }
 
-  removeFile(): void {
-    this.selectedFile = null;
-    const fileInput = document.getElementById(
-      'contractFile'
-    ) as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-  }
-
-  removeExistingFile(): void {
-    this.existingFile = null;
-    this.selectedFile = null;
-  }
-
-  onSubmit(): void {
-    if (this.clientForm.valid && !this.isSubmitting) {
-      this.isSubmitting = true;
-
-      const formValue = this.clientForm.value;
-      const contractFile = this.selectedFile || this.existingFile;
-
-      const clientData = {
-        ...formValue,
-        packagePrice: parseFloat(formValue.packagePrice),
-        renewalDate: new Date(formValue.renewalDate),
-        contractFile: contractFile,
-      };
-
-      if (this.isEditMode && this.clientId) {
-        const updatedClient = this.clientsService.updateClient(
-          this.clientId,
-          clientData
-        );
-        if (updatedClient) {
-          this.router.navigate(['/clients']);
-        } else {
-          this.isSubmitting = false;
-        }
-      } else {
-        this.clientsService.createClient(clientData);
-        this.router.navigate(['/clients']);
-      }
-    } else if (!this.clientForm.valid) {
-      // Mark all fields as touched to show validation errors
-      Object.keys(this.clientForm.controls).forEach((key) => {
-        const control = this.clientForm.get(key);
-        control?.markAsTouched();
-      });
-    }
-  }
-
+  /**
+   * Cancel form and navigate back
+   */
   goBack(): void {
-    this.router.navigate(['/clients']);
+    this.router.navigate([this.routes.CLIENTS]);
   }
 }

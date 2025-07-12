@@ -54,7 +54,7 @@
           (keydown.enter)="$event.preventDefault(); onSubmit()"
         />
         <div class="error-message" *ngIf="isFieldInvalid('email')">
-          {{ getFieldError('email') }}
+          {{ getFieldError("email") }}
         </div>
       </div>
 
@@ -70,7 +70,7 @@
           (keydown.enter)="$event.preventDefault(); onSubmit()"
         />
         <div class="error-message" *ngIf="isFieldInvalid('phone')">
-          {{ getFieldError('phone') }}
+          {{ getFieldError("phone") }}
         </div>
       </div>
     </div>
@@ -109,7 +109,6 @@
           <option value="">בחר סטטוס</option>
           <option [value]="LeadStatus.NEW">חדש</option>
           <option [value]="LeadStatus.IN_PROGRESS">בטיפול</option>
-          <option [value]="LeadStatus.FOLLOW_UP">במעקב</option>
           <option [value]="LeadStatus.NOT_INTERESTED">לא מעוניין</option>
         </select>
         <div class="error-message" *ngIf="isFieldInvalid('status')">

@@ -1,0 +1,28 @@
+/* App Component - Clean Layout */
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    var(--gray-50) 0%,
+    var(--primary-bg) 100%
+  );
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  padding: var(--space-8) 0;
+  background: transparent;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  color: var(--gray-500);
+  font-size: var(--font-size-lg);
+}

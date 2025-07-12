@@ -1,7 +1,6 @@
 export enum LeadStatus {
   NEW = 'חדש',
   IN_PROGRESS = 'בטיפול',
-  FOLLOW_UP = 'במעקב',
   NOT_INTERESTED = 'לא מעוניין',
 }
 
