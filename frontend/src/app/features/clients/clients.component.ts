@@ -23,6 +23,8 @@ export class ClientsComponent implements OnInit {
   filteredClients: Client[] = [];
   searchTerm = '';
   isLoading = false;
+  selectedClientIds: Set<string> = new Set();
+  selectAllChecked = false;
 
   readonly routes = APP_CONSTANTS.ROUTES;
   readonly PackageType = PackageType;
@@ -190,5 +192,51 @@ export class ClientsComponent implements OnInit {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  // Selection logic
+  isClientSelected(clientId: string): boolean {
+    return this.selectedClientIds.has(clientId);
+  }
+
+  toggleClientSelection(clientId: string, checked: boolean): void {
+    if (checked) {
+      this.selectedClientIds.add(clientId);
+    } else {
+      this.selectedClientIds.delete(clientId);
+    }
+    this.updateSelectAllChecked();
+  }
+
+  toggleSelectAll(checked: boolean): void {
+    this.selectAllChecked = checked;
+    if (checked) {
+      this.filteredClients.forEach((client) =>
+        this.selectedClientIds.add(client.id)
+      );
+    } else {
+      this.filteredClients.forEach((client) =>
+        this.selectedClientIds.delete(client.id)
+      );
+    }
+  }
+
+  updateSelectAllChecked(): void {
+    this.selectAllChecked =
+      this.filteredClients.length > 0 &&
+      this.filteredClients.every((client) =>
+        this.selectedClientIds.has(client.id)
+      );
+  }
+
+  deleteSelectedClients(): void {
+    if (this.selectedClientIds.size === 0) return;
+    if (confirm('האם אתה בטוח שברצונך למחוק את כל הלקוחות שנבחרו?')) {
+      this.selectedClientIds.forEach((id) =>
+        this.clientsService.deleteClient(id)
+      );
+      this.selectedClientIds.clear();
+      this.loadClients();
+    }
   }
 }

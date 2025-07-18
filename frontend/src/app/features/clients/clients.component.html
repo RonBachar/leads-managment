@@ -42,9 +42,23 @@
     </div>
 
     <div class="table-section">
+      <button
+        class="btn btn-danger mb-3"
+        [disabled]="selectedClientIds.size === 0"
+        (click)="deleteSelectedClients()"
+      >
+        מחק נבחרים
+      </button>
       <table class="table">
         <thead class="table-header">
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                [checked]="selectAllChecked"
+                (change)="toggleSelectAll($any($event.target).checked)"
+              />
+            </th>
             <th>שם</th>
             <th>אימייל</th>
             <th>טלפון</th>
@@ -58,6 +72,15 @@
         </thead>
         <tbody class="table-body">
           <tr *ngFor="let client of filteredClients">
+            <td>
+              <input
+                type="checkbox"
+                [checked]="isClientSelected(client.id)"
+                (change)="
+                  toggleClientSelection(client.id, $any($event.target).checked)
+                "
+              />
+            </td>
             <td>
               <strong>{{ client.firstName }} {{ client.lastName }}</strong>
             </td>

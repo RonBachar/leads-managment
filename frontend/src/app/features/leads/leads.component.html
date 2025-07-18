@@ -42,9 +42,23 @@
     </div>
 
     <div class="table-section">
+      <button
+        class="btn btn-danger mb-3"
+        [disabled]="selectedLeadIds.size === 0"
+        (click)="deleteSelectedLeads()"
+      >
+        מחק נבחרים
+      </button>
       <table class="table">
         <thead class="table-header">
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                [checked]="selectAllChecked"
+                (change)="toggleSelectAll($any($event.target).checked)"
+              />
+            </th>
             <th>שם</th>
             <th>אימייל</th>
             <th>טלפון</th>
@@ -57,6 +71,15 @@
         </thead>
         <tbody class="table-body">
           <tr *ngFor="let lead of filteredLeads">
+            <td>
+              <input
+                type="checkbox"
+                [checked]="isLeadSelected(lead.id)"
+                (change)="
+                  toggleLeadSelection(lead.id, $any($event.target).checked)
+                "
+              />
+            </td>
             <td>
               <strong>{{ lead.firstName }} {{ lead.lastName }}</strong>
             </td>

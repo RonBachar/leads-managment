@@ -20,6 +20,8 @@ export class LeadsComponent implements OnInit {
   filteredLeads: Lead[] = [];
   searchTerm = '';
   isLoading = false;
+  selectedLeadIds: Set<string> = new Set();
+  selectAllChecked = false;
 
   readonly routes = APP_CONSTANTS.ROUTES;
   readonly LeadStatus = LeadStatus;
@@ -135,5 +137,45 @@ export class LeadsComponent implements OnInit {
     return this.leads.filter(
       (lead) => lead.status === LeadStatus.NOT_INTERESTED
     ).length;
+  }
+
+  // Selection logic
+  isLeadSelected(leadId: string): boolean {
+    return this.selectedLeadIds.has(leadId);
+  }
+
+  toggleLeadSelection(leadId: string, checked: boolean): void {
+    if (checked) {
+      this.selectedLeadIds.add(leadId);
+    } else {
+      this.selectedLeadIds.delete(leadId);
+    }
+    this.updateSelectAllChecked();
+  }
+
+  toggleSelectAll(checked: boolean): void {
+    this.selectAllChecked = checked;
+    if (checked) {
+      this.filteredLeads.forEach((lead) => this.selectedLeadIds.add(lead.id));
+    } else {
+      this.filteredLeads.forEach((lead) =>
+        this.selectedLeadIds.delete(lead.id)
+      );
+    }
+  }
+
+  updateSelectAllChecked(): void {
+    this.selectAllChecked =
+      this.filteredLeads.length > 0 &&
+      this.filteredLeads.every((lead) => this.selectedLeadIds.has(lead.id));
+  }
+
+  deleteSelectedLeads(): void {
+    if (this.selectedLeadIds.size === 0) return;
+    if (confirm('האם אתה בטוח שברצונך למחוק את כל הלידים שנבחרו?')) {
+      this.selectedLeadIds.forEach((id) => this.leadsService.deleteLead(id));
+      this.selectedLeadIds.clear();
+      this.loadLeads();
+    }
   }
 }
