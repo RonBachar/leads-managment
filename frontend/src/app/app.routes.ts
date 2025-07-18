@@ -1,28 +1,22 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
+import { authGuard } from './core/services/auth.guard';
+import { loginRedirectGuard } from './core/services/login-redirect.guard';
 
 export const routes: Routes = [
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   {
-    path: '',
-    component: HomeComponent,
+    path: 'login',
+    loadComponent: () =>
+      import('./features/login/login.component').then((m) => m.LoginComponent),
+    canActivate: [loginRedirectGuard],
   },
   {
-    path: 'leads',
+    path: 'signup',
     loadComponent: () =>
-      import('./features/leads/leads.component').then((m) => m.LeadsComponent),
-  },
-  {
-    path: 'leads/new',
-    loadComponent: () =>
-      import('./features/leads/lead-form/lead-form.component').then(
-        (m) => m.LeadFormComponent
-      ),
-  },
-  {
-    path: 'leads/edit/:id',
-    loadComponent: () =>
-      import('./features/leads/lead-form/lead-form.component').then(
-        (m) => m.LeadFormComponent
+      import('./features/signup/signup.component').then(
+        (m) => m.SignupComponent
       ),
   },
   {
@@ -31,6 +25,7 @@ export const routes: Routes = [
       import('./features/clients/clients.component').then(
         (m) => m.ClientsComponent
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'clients/new',
@@ -38,6 +33,7 @@ export const routes: Routes = [
       import('./features/clients/client-form/client-form.component').then(
         (m) => m.ClientFormComponent
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'clients/edit/:id',
@@ -45,5 +41,6 @@ export const routes: Routes = [
       import('./features/clients/client-form/client-form.component').then(
         (m) => m.ClientFormComponent
       ),
+    canActivate: [authGuard],
   },
 ];

@@ -1,0 +1,136 @@
+.login-container {
+  max-width: 370px;
+  margin: 4rem auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2.5rem 2rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.2rem;
+}
+.login-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  color: var(--primary);
+  text-align: center;
+}
+.login-subtitle {
+  font-size: 1rem;
+  color: var(--gray-600);
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.form-label {
+  font-size: 0.95rem;
+  color: var(--gray-700);
+  margin-bottom: 0.2rem;
+  font-weight: 500;
+}
+.form-input {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  background: var(--gray-50);
+  margin-bottom: 0.5rem;
+  transition: border 0.2s;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+.login-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.2rem;
+}
+.forgot-link {
+  color: var(--primary);
+  font-size: 0.95rem;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.forgot-link:hover {
+  color: var(--primary-dark);
+}
+.btn {
+  min-width: 110px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--white);
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+.or-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--gray-500);
+  font-size: 0.95rem;
+  margin: 0.7rem 0 0.2rem 0;
+}
+.or-separator span {
+  flex: 1;
+  border-bottom: 1px solid var(--gray-200);
+  margin: 0 0.7rem;
+  line-height: 0.1em;
+}
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  background: var(--white);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.5rem;
+}
+.btn-google:hover {
+  background: var(--gray-50);
+  border-color: var(--primary);
+}
+.google-icon {
+  width: 20px;
+  height: 20px;
+  background: url("https://www.svgrepo.com/show/475656/google-color.svg")
+    no-repeat center center / contain;
+  display: inline-block;
+}
+.signup-link {
+  text-align: center;
+  font-size: 0.98rem;
+  color: var(--gray-600);
+  margin-top: 0.5rem;
+}
+.signup-link .highlight {
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 0.2rem;
+  transition: color 0.2s;
+}
+.signup-link .highlight:hover {
+  color: var(--primary-dark);
+}

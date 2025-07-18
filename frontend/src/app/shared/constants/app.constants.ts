@@ -5,9 +5,6 @@ export const APP_CONSTANTS = {
 
   // Navigation
   ROUTES: {
-    LEADS: '/leads',
-    LEADS_NEW: '/leads/new',
-    LEADS_EDIT: '/leads/edit',
     CLIENTS: '/clients',
     CLIENTS_NEW: '/clients/new',
     CLIENTS_EDIT: '/clients/edit',
@@ -37,26 +34,6 @@ export const APP_CONSTANTS = {
     DIRECTION: 'rtl',
     SUPPORTED: ['he', 'en'],
   },
-} as const;
-
-export const LEAD_SOURCES = {
-  WEBSITE: 'Website',
-  EMAIL: 'Email',
-  REFERRAL: 'Referral',
-  WHATSAPP: 'WhatsApp',
-  PHONE: 'Phone',
-  SOCIAL_MEDIA: 'Social Media',
-  OTHER: 'Other',
-} as const;
-
-export const LEAD_SOURCE_LABELS: Record<string, string> = {
-  [LEAD_SOURCES.WEBSITE]: 'אתר אינטרנט',
-  [LEAD_SOURCES.EMAIL]: 'אימייל',
-  [LEAD_SOURCES.REFERRAL]: 'המלצה',
-  [LEAD_SOURCES.WHATSAPP]: 'ווטסאפ',
-  [LEAD_SOURCES.PHONE]: 'טלפון',
-  [LEAD_SOURCES.SOCIAL_MEDIA]: 'רשתות חברתיות',
-  [LEAD_SOURCES.OTHER]: 'אחר',
 } as const;
 
 export const PACKAGE_LABELS: Record<string, string> = {

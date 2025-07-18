@@ -11,10 +11,6 @@ import { APP_CONSTANTS } from '../shared/constants/app.constants';
 export class HomeComponent {
   constructor(private router: Router) {}
 
-  goToLeads() {
-    this.router.navigate([APP_CONSTANTS.ROUTES.LEADS]);
-  }
-
   goToClients() {
     this.router.navigate([APP_CONSTANTS.ROUTES.CLIENTS]);
   }

@@ -9,32 +9,6 @@ export class FormValidationService {
   private readonly VALIDATION = APP_CONSTANTS.VALIDATION;
 
   /**
-   * Get lead form validators
-   */
-  getLeadValidators() {
-    return {
-      firstName: [
-        Validators.required,
-        Validators.minLength(this.VALIDATION.MIN_NAME_LENGTH),
-        Validators.maxLength(this.VALIDATION.MAX_NAME_LENGTH),
-      ],
-      lastName: [
-        Validators.required,
-        Validators.minLength(this.VALIDATION.MIN_NAME_LENGTH),
-        Validators.maxLength(this.VALIDATION.MAX_NAME_LENGTH),
-      ],
-      email: [Validators.email],
-      phone: [
-        Validators.required,
-        Validators.pattern(this.VALIDATION.PHONE_PATTERN),
-      ],
-      source: [Validators.required],
-      status: [Validators.required],
-      notes: [],
-    };
-  }
-
-  /**
    * Get client form validators
    */
   getClientValidators() {

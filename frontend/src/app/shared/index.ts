@@ -10,5 +10,4 @@ export * from './services/form-validation.service';
 export * from './pipes/format.pipe';
 
 // Models
-export * from '../shared/models/lead.model';
 export * from '../shared/models/client.model';
